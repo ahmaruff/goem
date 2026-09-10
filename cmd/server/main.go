@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"maka-go/internal/config"
+	"maka-go/internal/db"
 	"net/http"
 
 	"github.com/joho/godotenv"
@@ -11,6 +12,7 @@ import (
 )
 
 func main() {
+	// load config
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -18,6 +20,22 @@ func main() {
 
 	cfg := config.Load()
 
+	// setup DB
+	database, err := db.New(db.DBConfig{
+		Host:     cfg.DBHost,
+		Port:     cfg.DBPort,
+		Database: cfg.DBDatabase,
+		Username: cfg.DBUsername,
+		Password: cfg.DBPassword,
+	})
+
+	if err != nil {
+		log.Fatal("failed to connect database:", err)
+	}
+
+	defer database.Close()
+
+	// setup http handler
 	e := echo.New()
 
 	e.Use(middleware.RequestLogger())
