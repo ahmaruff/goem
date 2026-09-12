@@ -4,6 +4,9 @@ import (
 	"log"
 	"maka-go/internal/config"
 	"maka-go/internal/db"
+	"maka-go/internal/health"
+	healthhttp "maka-go/internal/health/http"
+	apphttp "maka-go/internal/http"
 	"net/http"
 
 	"github.com/joho/godotenv"
@@ -40,6 +43,15 @@ func main() {
 
 	e.Use(middleware.RequestLogger())
 	e.Use(middleware.Recover())
+
+	// setup dependencies
+	healthService := health.NewService(database)
+	healthHandler := healthhttp.NewHandler(healthService)
+
+	// register routes
+	apphttp.RegisterRoutes(e, apphttp.Dependencies{
+		Health: healthHandler,
+	})
 
 	e.GET("/", func(c *echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"message": "Hola, Amigos!"})
