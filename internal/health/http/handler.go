@@ -5,6 +5,7 @@ import (
 
 	"maka-go/internal/health"
 	httpresponse "maka-go/internal/http/response"
+	"maka-go/internal/logger"
 
 	"github.com/labstack/echo/v5"
 )
@@ -20,7 +21,14 @@ func NewHandler(service *health.Service) *Handler {
 }
 
 func (h *Handler) Check(c *echo.Context) error {
-	if err := h.service.Check(c.Request().Context()); err != nil {
+	ctx := c.Request().Context()
+
+	if err := h.service.Check(ctx); err != nil {
+		// Boundary: log the cause once (with stack), then answer the client.
+		logger.Err(ctx, err).
+			Str("dependency", "mysql").
+			Msg("health check failed")
+
 		return httpresponse.Fail(c, nethttp.StatusServiceUnavailable, "database unreachable", nil)
 	}
 

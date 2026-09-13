@@ -3,6 +3,9 @@ package health
 import (
 	"context"
 	"database/sql"
+	"fmt"
+
+	"maka-go/internal/logger"
 )
 
 type Service struct {
@@ -16,5 +19,11 @@ func NewService(db *sql.DB) *Service {
 }
 
 func (s *Service) Check(ctx context.Context) error {
-	return s.db.PingContext(ctx)
+	if err := s.db.PingContext(ctx); err != nil {
+		// This is where the error is born, so this is where the stack is
+		// captured. The HTTP layer logs it once and turns it into a response.
+		return logger.WithStack(fmt.Errorf("ping database: %w", err))
+	}
+
+	return nil
 }

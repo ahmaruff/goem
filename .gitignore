@@ -81,3 +81,7 @@ next-env.d.ts
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/go,nextjs,visualstudiocode
+
+### App ###
+# Local structured logs written by LOG_FILE
+/logs/
